@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>990</width>
-    <height>680</height>
+    <width>988</width>
+    <height>751</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -101,7 +101,7 @@
       <x>0</x>
       <y>110</y>
       <width>981</width>
-      <height>521</height>
+      <height>591</height>
      </rect>
     </property>
     <property name="font">
@@ -166,7 +166,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>80</y>
+          <y>90</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -191,7 +191,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>140</y>
+          <y>160</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -216,7 +216,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>200</y>
+          <y>230</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -241,7 +241,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>260</y>
+          <y>300</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -266,7 +266,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>320</y>
+          <y>370</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -291,7 +291,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>380</y>
+          <y>440</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -316,7 +316,7 @@
         <property name="geometry">
          <rect>
           <x>10</x>
-          <y>440</y>
+          <y>510</y>
           <width>171</width>
           <height>51</height>
          </rect>
@@ -353,6 +353,117 @@
          <bold>true</bold>
         </font>
        </property>
+       <widget class="QWidget" name="pageHeadingWidget" native="true">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>10</y>
+          <width>741</width>
+          <height>71</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <widget class="QLabel" name="headingTextLabel">
+         <property name="geometry">
+          <rect>
+           <x>20</x>
+           <y>20</y>
+           <width>141</width>
+           <height>31</height>
+          </rect>
+         </property>
+         <property name="font">
+          <font>
+           <family>Century Gothic</family>
+           <pointsize>16</pointsize>
+           <bold>true</bold>
+          </font>
+         </property>
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </widget>
+       <widget class="QWidget" name="upperPanel_widget" native="true">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>100</y>
+          <width>741</width>
+          <height>268</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="topMargin">
+          <number>0</number>
+         </property>
+         <property name="rightMargin">
+          <number>0</number>
+         </property>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QFrame" name="processFrame">
+           <property name="frameShape">
+            <enum>QFrame::Shape::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Raised</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QFrame" name="algorithmFrame">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>225</width>
+             <height>250</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>225</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::Shape::StyledPanel</enum>
+           </property>
+           <property name="frameShadow">
+            <enum>QFrame::Shadow::Plain</enum>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+       <widget class="QWidget" name="resultsWidget" native="true">
+        <property name="geometry">
+         <rect>
+          <x>10</x>
+          <y>410</y>
+          <width>741</width>
+          <height>141</height>
+         </rect>
+        </property>
+        <property name="autoFillBackground">
+         <bool>true</bool>
+        </property>
+       </widget>
       </widget>
      </item>
     </layout>
@@ -363,7 +474,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>990</width>
+     <width>988</width>
      <height>33</height>
     </rect>
    </property>
