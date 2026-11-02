@@ -64,7 +64,7 @@
          <rect>
           <x>10</x>
           <y>10</y>
-          <width>321</width>
+          <width>491</width>
           <height>70</height>
          </rect>
         </property>
@@ -114,17 +114,17 @@
      <bool>false</bool>
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <item alignment="Qt::AlignmentFlag::AlignHCenter">
+     <item>
       <widget class="QWidget" name="sideBarWidget" native="true">
        <property name="minimumSize">
         <size>
-         <width>175</width>
+         <width>200</width>
          <height>0</height>
         </size>
        </property>
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>300</width>
          <height>16777215</height>
         </size>
        </property>
@@ -142,7 +142,7 @@
          <rect>
           <x>10</x>
           <y>20</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -167,7 +167,7 @@
          <rect>
           <x>10</x>
           <y>80</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -192,7 +192,7 @@
          <rect>
           <x>10</x>
           <y>140</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -217,7 +217,7 @@
          <rect>
           <x>10</x>
           <y>200</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -242,7 +242,7 @@
          <rect>
           <x>10</x>
           <y>260</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -267,7 +267,7 @@
          <rect>
           <x>10</x>
           <y>320</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -292,7 +292,7 @@
          <rect>
           <x>10</x>
           <y>380</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
@@ -317,7 +317,7 @@
          <rect>
           <x>10</x>
           <y>440</y>
-          <width>151</width>
+          <width>171</width>
           <height>51</height>
          </rect>
         </property>
