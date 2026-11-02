@@ -1,0 +1,130 @@
+QMainWindow,
+QWidget#centralwidget {
+    background-color: #F5F1FF;
+    color: #30245F;
+    font-family: "Century Gothic";
+    font-size: 14px;
+}
+
+QFrame#headerFrame {
+    background-color: #33256D;
+    border: 1px solid #5945A0;
+    border-radius: 18px;
+}
+
+QLabel#appTitleLabel {
+    color: #FFFFFF;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+QLabel#appSubtitleLabel {
+    color: #D9D0FF;
+    font-size: 20px;
+}
+
+QFrame#sidebarFrame {
+    background-color: #F0EAFE;
+    border: 1px solid #DDD2FA;
+    border-radius: 16px;
+}
+
+QPushButton {
+    background-color: #FFFFFF;
+    color: #40318A;
+    border: 1px solid #DCD1FA;
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 15px;
+}
+
+QPushButton:hover {
+    background-color: #E8E0FF;
+}
+
+QPushButton#btnCpuScheduling {
+    background-color: #9380F2;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+
+QLabel#moduleTitleLabel {
+    color: #261A58;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+QLabel#moduleSubtitleLabel {
+    color: #6855A9;
+    font-size: 18px;
+}
+
+QFrame#processFrame,
+QFrame#algorithmFrame,
+QFrame#resultsFrame {
+    background-color: #FFFFFF;
+    border: 1px solid #D9CEFA;
+    border-radius: 12px;
+}
+
+QLabel#processPanelTitle,
+QLabel#algorithmPanelTitle,
+QLabel#resultsTitle {
+    background-color: #DCD2FA;
+    color: #302064;
+    font-size: 18px;
+    font-weight: bold;
+    padding: 10px;
+}
+
+QTableWidget {
+    background-color: #FFFFFF;
+    alternate-background-color: #F8F5FF;
+    color: #30245F;
+    gridline-color: #E3DAF8;
+    border: 1px solid #E3DAF8;
+}
+
+QHeaderView{
+    background-color: #F0EBFF;
+    color: #30245F;
+    padding: 8px;
+    border: 1px solid #E3DAF8;
+    font-weight: bold;
+}
+
+QComboBox,
+QSpinBox,
+QLineEdit {
+    background-color: #FFFFFF;
+    color: #30245F;
+    border: 1px solid #D3C8F5;
+    border-radius: 8px;
+    padding: 8px;
+}
+
+QPushButton#btnRunSimulation {
+    background-color: #7560CC;
+    color: #FFFFFF;
+    border: none;
+    border-radius: 14px;
+    padding: 14px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+QFrame#footerFrame {
+    background-color: #E7DFFF;
+    border-top: 1px solid #D1C4F7;
+}
+
+QLabel#statusIndicator {
+    color: #39D353;
+    font-size: 18px;
+}
+
+QLabel#statusLabel,
+QLabel#versionLabel {
+    color: #30245F;
+    font-size: 13px;
+}
