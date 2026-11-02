@@ -392,7 +392,7 @@
           <x>10</x>
           <y>100</y>
           <width>741</width>
-          <height>268</height>
+          <height>281</height>
          </rect>
         </property>
         <property name="autoFillBackground">
@@ -402,14 +402,17 @@
          <property name="spacing">
           <number>10</number>
          </property>
+         <property name="leftMargin">
+          <number>10</number>
+         </property>
          <property name="topMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <property name="rightMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <property name="bottomMargin">
-          <number>0</number>
+          <number>10</number>
          </property>
          <item>
           <widget class="QFrame" name="processFrame">
@@ -419,6 +422,32 @@
            <property name="frameShadow">
             <enum>QFrame::Shadow::Raised</enum>
            </property>
+           <widget class="QWidget" name="widget_2" native="true">
+            <property name="geometry">
+             <rect>
+              <x>20</x>
+              <y>20</y>
+              <width>441</width>
+              <height>221</height>
+             </rect>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <item>
+              <widget class="QLabel" name="inputTitleLabel">
+               <property name="font">
+                <font>
+                 <family>Century Gothic</family>
+                 <pointsize>14</pointsize>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>INPUT</string>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
           </widget>
          </item>
          <item>
@@ -437,7 +466,7 @@
            </property>
            <property name="maximumSize">
             <size>
-             <width>225</width>
+             <width>200</width>
              <height>16777215</height>
             </size>
            </property>
@@ -454,9 +483,9 @@
        <widget class="QWidget" name="resultsWidget" native="true">
         <property name="geometry">
          <rect>
-          <x>10</x>
+          <x>20</x>
           <y>410</y>
-          <width>741</width>
+          <width>731</width>
           <height>141</height>
          </rect>
         </property>
