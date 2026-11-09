@@ -1,9 +1,17 @@
-import sys
-from pathlib import Path
+"""Operating System Simulator - CPU Scheduling (console version, no GUI, single file).
 
-from PySide6.QtWidgets import QApplication
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice
+Needs only Python 3.8+ - no other files or packages.
+Run:   python cli_01_cpu_scheduling.py
+"""
+from __future__ import annotations
+
+import heapq
+import random
+import re
+from collections import deque
+from dataclasses import dataclass
+from typing import Dict, List, Tuple
+
 
 # ============================================================================
 # Input validation
