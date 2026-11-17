@@ -367,7 +367,7 @@ def main():
         for r in results:
             banner(f"{r.algorithm}  (head {head}, {len(reqs)} requests)")
             order = " -> ".join(map(str, r.order[:30])) + (" ..." if len(r.order) > 30 else "")
-            print("Service order: " + order)7.
+            print("Service order: " + order)
             print_table(["Move", "From", "To", "Distance", "Note"],
                         [[i + 1, a, b, d, n] for i, (a, b, d, n) in enumerate(r.steps)],
                         None if len(r.steps) <= 30 else 15)
