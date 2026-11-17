@@ -1,3 +1,4 @@
+"""Operating System Simulator - Page Replacement (console version, no GUI, single file).
 
 
 Needs only Python 3.8+ - no other files or packages.
