@@ -1,60 +1,39 @@
+"""Operating System Simulator - entry point.
 
+Run:   python main.py          (needs:  pip install PySide6)
+"""
 import sys
 from pathlib import Path
 
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile, QIODevice
+
+from main_window import load_main_window
 
 
 def main():
     app = QApplication(sys.argv)
+    app.setApplicationName("Operating System Simulator")
 
-    # Get the directory containing main.py
-    project_dir = Path(__file__).resolve().parent
+    # Century Gothic (from the original stylesheet) with sensible fallbacks.
+    font = QFont()
+    font.setFamilies(["Century Gothic", "Poppins", "Segoe UI", "Helvetica Neue", "Arial"])
+    font.setPointSize(10)
+    app.setFont(font)
 
-    # Paths to your UI and stylesheet
-    ui_path = project_dir / "main_window.ui"
-    style_path = project_dir / "styles.qss"
-
-    # Load the stylesheet
+    style_path = Path(__file__).resolve().parent / "styles.qss"
     if style_path.exists():
-        try:
-            stylesheet = style_path.read_text(encoding="utf-8")
-            app.setStyleSheet(stylesheet)
-            print("Stylesheet loaded successfully!")
-        except OSError as error:
-            print(f"Could not read stylesheet: {error}")
+        app.setStyleSheet(style_path.read_text(encoding="utf-8"))
     else:
-        print(f"WARNING: Stylesheet not found: {style_path}")
+        print(f"WARNING: stylesheet not found: {style_path}")
 
-    # Check whether the UI file exists
-    if not ui_path.exists():
-        print(f"ERROR: UI file not found: {ui_path}")
+    ui_path = Path(__file__).resolve().parent / "main_window.ui"
+    try:
+        window = load_main_window(ui_path)
+    except RuntimeError as error:
+        print(f"ERROR: {error}")
         sys.exit(1)
-
-    # Open the UI file
-    ui_file = QFile(str(ui_path))
-
-    if not ui_file.open(QIODevice.OpenModeFlag.ReadOnly):
-        print(f"ERROR opening UI: {ui_file.errorString()}")
-        sys.exit(1)
-
-    # Load the UI
-    loader = QUiLoader()
-    window = loader.load(ui_file)
-    ui_file.close()
-
-    if window is None:
-        print(f"ERROR loading UI: {loader.errorString()}")
-        sys.exit(1)
-
-    # Display the window
     window.show()
-
-    print("UI loaded successfully!")
-    print(f"Window visible: {window.isVisible()}")
-
     sys.exit(app.exec())
 
 
