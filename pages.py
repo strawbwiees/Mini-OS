@@ -175,7 +175,7 @@ class CpuPage(ModulePage):
 
     def build_options(self, body):
         self.algo = QComboBox()
-        self.algo.addItems(cpu.ALGORITHMS)
+        self.algo.addItems(cpuScheduling.ALGORITHMS)
         self.algo.setCurrentText("Round Robin")
         self.quantum = spin(1, 1000, 2)
         self.low_first = QCheckBox("Lower number = higher priority")
@@ -195,33 +195,33 @@ class CpuPage(ModulePage):
         self.low_first.setEnabled(name.startswith("Priority"))
 
     def load_sample(self):
-        self.table.set_rows(cpu.SAMPLE)
+        self.table.set_rows(cpuScheduling.SAMPLE)
 
     def randomize(self):
         self.table.set_rows([(p.pid, p.arrival, p.burst, p.priority)
-                             for p in cpu.random_processes(5)])
+                             for p in cpuScheduling.random_processes(5)])
 
     def read_processes(self):
         procs = []
         for n, row in enumerate(self.table.rows(), 1):
             pid = row[0].strip()
             if not pid:
-                raise cpu.InputError(f"Row {n}: the process ID is blank.")
-            procs.append(cpu.Process(
+                raise cpuScheduling.InputError(f"Row {n}: the process ID is blank.")
+            procs.append(cpuScheduling.Process(
                 pid,
-                cpu.parse_int(row[1], f"{pid} arrival time", 0),
-                cpu.parse_int(row[2], f"{pid} burst time", 1),
-                cpu.parse_int(row[3], f"{pid} priority", 0) if row[3].strip() else 0))
+                cpuScheduling.parse_int(row[1], f"{pid} arrival time", 0),
+                cpuScheduling.parse_int(row[2], f"{pid} burst time", 1),
+                cpuScheduling.parse_int(row[3], f"{pid} priority", 0) if row[3].strip() else 0))
         return procs
 
     def schedule(self, name):
-        return cpu.run_algorithm(name, self.read_processes(), self.quantum.value(),
-                                 self.low_first.isChecked())
+        return cpuScheduling.run_algorithm(name, self.read_processes(), self.quantum.value(),
+                                            self.low_first.isChecked())
 
     def run(self):
         res = self.schedule(self.algo.currentText())
         self.clear_results()
-        colors = ColorMap({cpu.IDLE: "#E6E1F5"})
+        colors = ColorMap({cpuScheduling.IDLE: "#E6E1F5"})
         chart = GanttChart()
         chart.set_segments(res.timeline, colors)
         self.add(section(f"Gantt Chart  -  {res.algorithm}"))
@@ -242,8 +242,8 @@ class CpuPage(ModulePage):
 
     def compare_all(self):
         procs = self.read_processes()
-        results = [cpu.run_algorithm(n, procs, self.quantum.value(), self.low_first.isChecked())
-                   for n in cpu.ALGORITHMS]
+        results = [cpuScheduling.run_algorithm(n, procs, self.quantum.value(), self.low_first.isChecked())
+                   for n in cpuScheduling.ALGORITHMS]
         best = min(r.avg_waiting for r in results)
         rows = [[r.algorithm, f2(r.avg_waiting), f2(r.avg_turnaround), f2(r.avg_response),
                  f"{r.cpu_utilization:.1f}%", r.context_switches] for r in results]
@@ -286,13 +286,13 @@ class BankersPage(ModulePage):
 
     def load_sample(self):
         self.table.set_rows([(f"P{i}", nums(a), nums(m)) for i, (a, m) in
-                             enumerate(zip(bankers.SAMPLE_ALLOC, bankers.SAMPLE_MAX))])
-        self.available.setText(nums(bankers.SAMPLE_AVAIL))
+                             enumerate(zip(bankersAlgorithm.SAMPLE_ALLOC, bankersAlgorithm.SAMPLE_MAX))])
+        self.available.setText(nums(bankersAlgorithm.SAMPLE_AVAIL))
         self.req_proc.setText("P1")
         self.req_vec.setText("1 0 2")
 
     def randomize(self):
-        names, avail, alloc, mx = bankers.generate_safe_system(5, 3)
+        names, avail, alloc, mx = bankersAlgorithm.generate_safe_system(5, 3)
         self.table.set_rows([(n, nums(a), nums(m)) for n, a, m in zip(names, alloc, mx)])
         self.available.setText(nums(avail))
 
@@ -301,15 +301,15 @@ class BankersPage(ModulePage):
         for n, row in enumerate(self.table.rows(), 1):
             name = row[0].strip()
             if not name:
-                raise bankers.InputError(f"Row {n}: the process name is blank.")
+                raise bankersAlgorithm.InputError(f"Row {n}: the process name is blank.")
             names.append(name)
-            alloc.append(bankers.parse_int_list(row[1], f"{name} Allocation", 0))
-            mx.append(bankers.parse_int_list(row[2], f"{name} Maximum", 0))
-        avail = bankers.parse_int_list(self.available.text(), "Available", 0)
+            alloc.append(bankersAlgorithm.parse_int_list(row[1], f"{name} Allocation", 0))
+            mx.append(bankersAlgorithm.parse_int_list(row[2], f"{name} Maximum", 0))
+        avail = bankersAlgorithm.parse_int_list(self.available.text(), "Available", 0)
         return names, avail, alloc, mx
 
     def render_safety(self, res, alloc=None, mx=None):
-        letters = bankers.resource_names(len(res.need[0])) if res.need else []
+        letters = bankersAlgorithm.resource_names(len(res.need[0])) if res.need else []
         if res.safe:
             self.add(badge("SAFE STATE  -  safe sequence:  " + "  \u2192  ".join(res.sequence), "ok"))
         else:
@@ -331,7 +331,7 @@ class BankersPage(ModulePage):
 
     def run(self):
         names, avail, alloc, mx = self.read_system()
-        res = bankers.analyse(names, avail, alloc, mx)
+        res = bankersAlgorithm.analyse(names, avail, alloc, mx)
         self.clear_results()
         self.render_safety(res, alloc, mx)
         self.ok("System is SAFE" if res.safe else "System is UNSAFE")
@@ -340,9 +340,9 @@ class BankersPage(ModulePage):
         names, avail, alloc, mx = self.read_system()
         who = self.req_proc.text().strip()
         if who not in names:
-            raise bankers.InputError(f"Request: '{who}' is not one of the processes {names}.")
-        vec = bankers.parse_int_list(self.req_vec.text(), "Request", 0)
-        out = bankers.resource_request(names, names.index(who), vec, avail, alloc, mx)
+            raise bankersAlgorithm.InputError(f"Request: '{who}' is not one of the processes {names}.")
+        vec = bankersAlgorithm.parse_int_list(self.req_vec.text(), "Request", 0)
+        out = bankersAlgorithm.resource_request(names, names.index(who), vec, avail, alloc, mx)
         self.clear_results()
         self.add(badge(out["message"], "ok" if out["granted"] else "bad"))
         if out["result"] is not None:
@@ -452,7 +452,7 @@ class ReplacementPage(ModulePage):
     options_title = "Algorithm"
 
     def build_inputs(self, body):
-        self.refs = line(nums(replacement.SAMPLE))
+        self.refs = line(nums(pageReplacement.SAMPLE))
         self.frames = spin(1, 50, 3)
         form(body, [("Page reference string", self.refs), ("Number of frames", self.frames)])
         body.addWidget(hint("Separate page numbers with spaces or commas."))
@@ -460,7 +460,7 @@ class ReplacementPage(ModulePage):
 
     def build_options(self, body):
         self.algo = QComboBox()
-        self.algo.addItems(replacement.ALGORITHMS)
+        self.algo.addItems(pageReplacement.ALGORITHMS)
         form(body, [("Algorithm", self.algo)])
         body.addWidget(self.run_button())
         body.addWidget(button_row(self.action("Load Sample", self.load_sample),
@@ -468,19 +468,19 @@ class ReplacementPage(ModulePage):
                                   self.action("Compare All", self.compare_all)))
 
     def load_sample(self):
-        self.refs.setText(nums(replacement.SAMPLE))
+        self.refs.setText(nums(pageReplacement.SAMPLE))
         self.frames.setValue(3)
 
     def randomize(self):
         self.refs.setText(nums(random.randint(0, 9) for _ in range(20)))
 
     def read(self):
-        return (replacement.parse_int_list(self.refs.text(), "Reference string", 0),
+        return (pageReplacement.parse_int_list(self.refs.text(), "Reference string", 0),
                 self.frames.value())
 
     def run(self):
         refs, frames = self.read()
-        res = replacement.run_algorithm(self.algo.currentText(), refs, frames)
+        res = pageReplacement.run_algorithm(self.algo.currentText(), refs, frames)
         self.clear_results()
         self.add(section(f"{res.algorithm}  -  {frames} frame(s)"))
         self.add(self.step_table(res))
@@ -525,7 +525,7 @@ class ReplacementPage(ModulePage):
 
     def compare_all(self):
         refs, frames = self.read()
-        results = [replacement.run_algorithm(n, refs, frames) for n in replacement.ALGORITHMS]
+        results = [pageReplacement.run_algorithm(n, refs, frames) for n in pageReplacement.ALGORITHMS]
         best = min(r.faults for r in results)
         rows = [[r.algorithm, r.faults, r.hits, f"{r.fault_ratio * 100:.1f}%",
                  f"{r.hit_ratio * 100:.1f}%"] for r in results]
@@ -703,7 +703,7 @@ class DiskPage(ModulePage):
     options_title = "Algorithm"
 
     def build_inputs(self, body):
-        self.requests = line(nums(disk.SAMPLE))
+        self.requests = line(nums(diskScheduling.SAMPLE))
         self.head = spin(0, 1_000_000, 53)
         self.size = spin(1, 1_000_001, 200)
         self.direction = QComboBox()
@@ -718,22 +718,22 @@ class DiskPage(ModulePage):
 
     def build_options(self, body):
         self.algo = QComboBox()
-        self.algo.addItems(disk.ALGORITHMS)
+        self.algo.addItems(diskScheduling.ALGORITHMS)
         form(body, [("Algorithm", self.algo)])
         body.addWidget(self.run_button())
         body.addWidget(button_row(self.action("Load Sample", self.load_sample),
                                   self.action("Compare All", self.compare_all)))
 
     def load_sample(self):
-        self.requests.setText(nums(disk.SAMPLE))
+        self.requests.setText(nums(diskScheduling.SAMPLE))
         self.head.setValue(53)
         self.size.setValue(200)
 
     def solve(self, name):
-        reqs = disk.parse_int_list(self.requests.text(), "Requests", 0)
+        reqs = diskScheduling.parse_int_list(self.requests.text(), "Requests", 0)
         d = "up" if self.direction.currentIndex() == 0 else "down"
-        return disk.run_algorithm(name, reqs, self.head.value(), self.size.value(), d,
-                                  self.jump.isChecked())
+        return diskScheduling.run_algorithm(name, reqs, self.head.value(), self.size.value(), d,
+                                            self.jump.isChecked())
 
     def run(self):
         res = self.solve(self.algo.currentText())
@@ -752,7 +752,7 @@ class DiskPage(ModulePage):
         self.ok(f"{res.algorithm}: total head movement = {res.total_movement}")
 
     def compare_all(self):
-        results = [self.solve(n) for n in disk.ALGORITHMS]
+        results = [self.solve(n) for n in diskScheduling.ALGORITHMS]
         best = min(r.total_movement for r in results)
         rows = [[r.algorithm, r.total_movement, f2(r.average_seek)] for r in results]
         self.clear_results()
@@ -776,7 +776,7 @@ class MultiprogPage(ModulePage):
         self.table = RowTable(["Program", "Arrival", "Memory", "CPU Burst", "I/O Burst"],
                               ["", "0", "100", "5", "2"], prefix="J", start=1,
                               add_text="+  Add Program", min_height=230)
-        self.table.set_rows(multiprog.SAMPLE)
+        self.table.set_rows(multiprogramming.SAMPLE)
         body.addWidget(self.table)
 
     def build_options(self, body):
@@ -786,19 +786,19 @@ class MultiprogPage(ModulePage):
         form(body, [("Total memory", self.memory), ("CPU time quantum", self.quantum),
                     ("Max degree of multiprogramming (0 = unlimited)", self.degree)])
         body.addWidget(self.run_button())
-        body.addWidget(self.action("Load Sample", lambda: self.table.set_rows(multiprog.SAMPLE)))
+        body.addWidget(self.action("Load Sample", lambda: self.table.set_rows(multiprogramming.SAMPLE)))
 
     def run(self):
-        P = multiprog.parse_int
+        P = multiprogramming.parse_int
         progs = []
         for n, r in enumerate(self.table.rows(), 1):
             name = r[0].strip()
             if not name:
-                raise multiprog.InputError(f"Row {n}: the program name is blank.")
-            progs.append(multiprog.Program(name, P(r[1], f"{name} arrival", 0),
-                                           P(r[2], f"{name} memory", 1), P(r[3], f"{name} CPU burst", 1),
-                                           P(r[4], f"{name} I/O burst", 0)))
-        res = multiprog.simulate(progs, self.memory.value(), self.quantum.value(), self.degree.value())
+                raise multiprogramming.InputError(f"Row {n}: the program name is blank.")
+            progs.append(multiprogramming.Program(name, P(r[1], f"{name} arrival", 0),
+                                                   P(r[2], f"{name} memory", 1), P(r[3], f"{name} CPU burst", 1),
+                                                   P(r[4], f"{name} I/O burst", 0)))
+        res = multiprogramming.simulate(progs, self.memory.value(), self.quantum.value(), self.degree.value())
         m = res.metrics
         colors = ColorMap({"IDLE": "#E6E1F5"})
         self.clear_results()
