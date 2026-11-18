@@ -224,9 +224,9 @@ class CpuPage(ModulePage):
                 raise cpuScheduling.InputError(f"Row {n}: the process ID is blank.")
             procs.append(cpuScheduling.Process(
                 pid,
-                cpuScheduling.parse_int(row[1], f"{pid} arrival time", 0),
-                cpuScheduling.parse_int(row[2], f"{pid} burst time", 1),
-                cpuScheduling.parse_int(row[3], f"{pid} priority", 0) if row[3].strip() else 0))
+                cpuScheduling.parse_number(row[1], f"{pid} arrival time"),
+                cpuScheduling.parse_number(row[2], f"{pid} burst time"),
+                cpuScheduling.parse_number(row[3], f"{pid} priority") if row[3].strip() else 0))
         return procs
 
     def schedule(self, name):
@@ -250,14 +250,12 @@ class CpuPage(ModulePage):
         self.add(make_table(["Process", "Arrival", "Burst", "Waiting Time", "Turnaround Time",
                              "Response Time"], rows, cell_colors=cell, highlight_last=True))
         self.add(tiles([("CPU Utilization", f"{res.cpu_utilization:.1f}%"),
-                        ("Throughput", f"{res.throughput:.3f} /unit"),
-                        ("Context Switches", res.context_switches),
                         ("Finished at", f"t = {res.end_time}")]))
         self.ok(f"Simulation complete: {res.algorithm}")
 
     def compare_all(self):
         procs = self.read_processes()
-        results = [cpuScheduling.run_algorithm(n, procs, self.quantum.value(), self.low_first.isChecked())
+        results = [cpuScheduling.run_algorithm(n, procs, self.quantum_value(), self.low_first.isChecked())
                    for n in cpuScheduling.ALGORITHMS]
         best = min(r.avg_waiting for r in results)
         rows = [[r.algorithm, f2(r.avg_waiting), f2(r.avg_turnaround), f2(r.avg_response),

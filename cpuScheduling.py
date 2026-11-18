@@ -46,6 +46,28 @@ def parse_int(text, label, minimum=None, maximum=None):
     return value
 
 
+def clean(x):
+    """Round away float noise (0.1+0.2) and turn 5.0 into 5 so tables look tidy."""
+    x = round(x, 6)
+    return int(x) if x == int(x) else x
+
+
+def parse_number(text, label):
+    """Like parse_int but accepts decimals (1.2, ',' also allowed).  Only negatives are rejected."""
+    s = "" if text is None else str(text).strip().replace(",", ".")
+    if s == "":
+        raise InputError(f"{label}: the field is blank.")
+    try:
+        value = float(s)
+    except ValueError:
+        raise InputError(f"{label}: '{s}' is not a valid number.") from None
+    if value != value or value in (float("inf"), float("-inf")):
+        raise InputError(f"{label}: '{s}' is not a valid number.")
+    if value < 0:
+        raise InputError(f"{label}: negative values are not allowed (got {s}).")
+    return clean(value)
+
+
 def parse_int_list(text, label, minimum=None, maximum=None, min_count=1):
     """Parse a list of integers separated by commas, spaces, semicolons or newlines."""
     s = "" if text is None else str(text).strip()
@@ -238,9 +260,9 @@ ALGORITHMS = [
 @dataclass
 class Process:
     pid: str
-    arrival: int
-    burst: int
-    priority: int = 0
+    arrival: float
+    burst: float
+    priority: float = 0
 
 
 @dataclass
@@ -270,8 +292,8 @@ def validate_processes(procs: List[Process]) -> None:
         seen.add(p.pid)
         if p.arrival < 0:
             raise InputError(f"{p.pid}: arrival time cannot be negative.")
-        if p.burst < 1:
-            raise InputError(f"{p.pid}: burst time must be at least 1.")
+        if p.burst <= 0:
+            raise InputError(f"{p.pid}: burst time must be greater than 0.")
         if p.priority < 0:
             raise InputError(f"{p.pid}: priority cannot be negative.")
 
@@ -301,8 +323,8 @@ def _build_result(name, procs, timeline, completion) -> ScheduleResult:
         rows.append({
             "pid": p.pid, "arrival": p.arrival, "burst": p.burst,
             "priority": p.priority, "start": first_start[p.pid],
-            "completion": c, "turnaround": tat, "waiting": tat - p.burst,
-            "response": first_start[p.pid] - p.arrival,
+            "completion": c, "turnaround": clean(tat), "waiting": clean(tat - p.burst),
+            "response": clean(first_start[p.pid] - p.arrival),
         })
     n = len(procs)
     begin, end = timeline[0][1], timeline[-1][2]
@@ -343,8 +365,8 @@ def _nonpreemptive(name, procs, key):
             continue
         _, _, i = heapq.heappop(heap)
         p = procs[i]
-        timeline.append((p.pid, time, time + p.burst))
-        time += p.burst
+        timeline.append((p.pid, time, clean(time + p.burst)))
+        time = clean(time + p.burst)
         completion[p.pid] = time
         done += 1
     return _build_result(name, procs, timeline, completion)
@@ -371,10 +393,10 @@ def _preemptive(name, procs, key):
             continue
         _, _, i = heapq.heappop(heap)
         next_arrival = procs[order[ptr]].arrival if ptr < n else float("inf")
-        run = int(min(rem[i], next_arrival - time))
-        timeline.append((procs[i].pid, time, time + run))
-        time += run
-        rem[i] -= run
+        run = clean(min(rem[i], next_arrival - time))
+        timeline.append((procs[i].pid, time, clean(time + run)))
+        time = clean(time + run)
+        rem[i] = clean(rem[i] - run)
         if rem[i] == 0:
             completion[procs[i].pid] = time
             done += 1
@@ -383,7 +405,7 @@ def _preemptive(name, procs, key):
     return _build_result(name, procs, timeline, completion)
 
 
-def round_robin(procs: List[Process], quantum: int) -> ScheduleResult:
+def round_robin(procs: List[Process], quantum: float) -> ScheduleResult:
     if quantum < 0:
         raise InputError("Round Robin: the time quantum cannot be negative.")
     if quantum == 0:
@@ -403,9 +425,10 @@ def round_robin(procs: List[Process], quantum: int) -> ScheduleResult:
             continue
         i = queue.popleft()
         run = min(quantum, rem[i])
-        timeline.append((procs[i].pid, time, time + run))
-        time = round(time + run, 6)
-        rem[i] = round(rem[i] - run, 6)
+        run = clean(run)
+        timeline.append((procs[i].pid, time, clean(time + run)))
+        time = clean(time + run)
+        rem[i] = clean(rem[i] - run)
         # processes that arrived during this slice enter the queue BEFORE the preempted one
         while ptr < n and procs[order[ptr]].arrival <= time:
             queue.append(order[ptr]); ptr += 1
@@ -447,9 +470,9 @@ SAMPLE = [("P1", 0, 8, 3), ("P2", 1, 4, 1), ("P3", 2, 9, 4), ("P4", 3, 5, 2), ("
 def to_process(tok, n):
     if len(tok) not in (3, 4):
         raise InputError(f"Row {n}: expected 'ID arrival burst [priority]'.")
-    return Process(tok[0], parse_int(tok[1], f"Row {n} arrival", 0),
-                      parse_int(tok[2], f"Row {n} burst", 1),
-                      parse_int(tok[3], f"Row {n} priority", 0) if len(tok) == 4 else 0)
+    return Process(tok[0], parse_number(tok[1], f"Row {n} arrival"),
+                      parse_number(tok[2], f"Row {n} burst"),
+                      parse_number(tok[3], f"Row {n} priority") if len(tok) == 4 else 0)
 
 
 def random_processes(n):
