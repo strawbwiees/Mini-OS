@@ -194,8 +194,10 @@ class CpuPage(ModulePage):
 
     def sync(self, *_):
         name = self.algo.currentText()
+        is_priority = name.startswith("Priority")
         self.quantum.setEnabled(name == "Round Robin")
-        self.low_first.setEnabled(name.startswith("Priority"))
+        self.low_first.setEnabled(is_priority)
+        self.table.set_column_visible(3, is_priority)  # column 3 = Priority
 
     def load_sample(self):
         self.table.set_rows(cpuScheduling.SAMPLE)

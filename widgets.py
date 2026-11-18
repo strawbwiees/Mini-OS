@@ -257,6 +257,9 @@ class RowTable(QWidget):
         for row in rows:
             self.add_row(row)
 
+    def set_column_visible(self, column: int, visible: bool) -> None:
+        self.table.setColumnHidden(column, not visible)
+
     def rows(self) -> List[List[str]]:
         out = []
         for r in range(self.table.rowCount()):
