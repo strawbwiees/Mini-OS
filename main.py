@@ -5,6 +5,7 @@ Run:   python main.py          (needs:  pip install PySide6)
 import sys
 from pathlib import Path
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
@@ -13,6 +14,8 @@ from main_window import load_main_window
 
 def main():
     app = QApplication(sys.argv)
+    app.setStyle("Fusion")
+    app.styleHints().setColorScheme(Qt.ColorScheme.Light)
     app.setApplicationName("Operating System Simulator")
 
     # Century Gothic (from the original stylesheet) with sensible fallbacks.

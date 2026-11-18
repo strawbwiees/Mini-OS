@@ -11,7 +11,9 @@ from PySide6.QtWidgets import (QAbstractItemView, QFormLayout, QFrame,
                                QPushButton, QScrollArea, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QWidget)
 
-#palette
+# --------------------------------------------------------------------------
+# Palette (taken from the sample UI / styles.qss)
+# --------------------------------------------------------------------------
 INK = "#30245F"
 MUTED = "#6855A9"
 PURPLE = "#7560CC"
@@ -288,6 +290,10 @@ class GanttChart(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.fillRect(self.rect(), QColor("#FFFFFF"))          # white background
+        font = QFont(p.font())
+        font.setBold(True)
+        p.setFont(font)                                      # bold labels + time numbers
         if not self._segs:
             p.setPen(QColor(MUTED))
             draw_centered(p, QRectF(self.rect()), "Nothing to show")
@@ -334,6 +340,11 @@ class GanttChart(QWidget):
         return QSize(max(420, 34 * len(self._segs)), 86)
 
 
+def elide(painter: QPainter, text: str, width: float) -> str:
+    return painter.fontMetrics().elidedText(text, Qt.TextElideMode.ElideRight,
+                                            max(int(width), 8))
+
+
 class BlockStrip(QWidget):
     """Memory map: a row of labelled blocks. Block = dict(label, caption, weight, color)."""
 
@@ -372,6 +383,7 @@ class BlockStrip(QWidget):
     def paintEvent(self, event):
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.fillRect(self.rect(), QColor("#FFFFFF"))          # white background
         if not self._blocks:
             return
         left, top, h = 8, 6, 62
@@ -379,8 +391,8 @@ class BlockStrip(QWidget):
         widths = self._widths(avail)
         fm = p.fontMetrics()
         base = QFont(p.font())
+        base.setBold(True)                                   # all chart text bold
         bold = QFont(base)
-        bold.setBold(True)
         p.save()
         clip = QPainterPath()
         clip.addRoundedRect(QRectF(left, top, avail, h), 9, 9)
@@ -402,11 +414,6 @@ class BlockStrip(QWidget):
         p.restore()
 
 
-def elide(painter: QPainter, text: str, width: float) -> str:
-    return painter.fontMetrics().elidedText(text, Qt.TextElideMode.ElideRight,
-                                            max(int(width), 8))
-
-
 class PathChart(QWidget):
     """Disk-head movement: cylinders run left-to-right, time runs top-to-bottom."""
 
@@ -423,10 +430,14 @@ class PathChart(QWidget):
         self.update()
 
     def paintEvent(self, event):
-        if not self._path:
-            return
         p = QPainter(self)
         p.setRenderHint(QPainter.RenderHint.Antialiasing)
+        p.fillRect(self.rect(), QColor("#FFFFFF"))          # white background
+        if not self._path:
+            return
+        font = QFont(p.font())
+        font.setBold(True)
+        p.setFont(font)                                      # bold numbers
         left, right, top, step = 30, 40, 36, 28
         width = max(self.width() - left - right, 10)
         n = len(self._path)

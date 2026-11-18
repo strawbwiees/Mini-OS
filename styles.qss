@@ -184,6 +184,8 @@ QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
 QScrollBar:horizontal { background: transparent; height: 12px; margin: 2px; }
 QScrollBar::handle:horizontal { background: #CFC4F7; border-radius: 5px; min-width: 30px; }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
+QScrollArea { background: transparent; border: none; }
+QScrollArea > QWidget > QWidget { background: transparent; }
 
 /* ---------- status bar (from main_window.ui) ---------- */
 QStatusBar { background-color: #E7DFFF; color: #30245F; border-top: 1px solid #D1C4F7; font-size: 13px; }
