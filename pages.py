@@ -9,7 +9,7 @@ from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFrame,
                                QHBoxLayout, QHeaderView, QLineEdit,
                                QMessageBox, QPlainTextEdit, QPushButton,
                                QScrollArea, QSpinBox, QTableWidget,
-                               QTableWidgetItem, QVBoxLayout, QWidget)
+                               QTableWidgetItem, QVBoxLayout, QWidget, QAbstractSpinBox, QDoubleSpinBox)
 
 import bankersAlgorithm
 import cpuScheduling
@@ -177,7 +177,14 @@ class CpuPage(ModulePage):
         self.algo = QComboBox()
         self.algo.addItems(cpuScheduling.ALGORITHMS)
         self.algo.setCurrentText("Round Robin")
-        self.quantum = spin(1, 1000, 2)
+
+        self.quantum = QDoubleSpinBox()
+        self.quantum.setDecimals(2)  # how many decimal places it allows
+        self.quantum.setRange(0.01, 1000)
+        self.quantum.setSingleStep(0.5)  # arrow / mouse-wheel step
+        self.quantum.setValue(2)
+        self.quantum.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+
         self.low_first = QCheckBox("Lower number = higher priority")
         self.low_first.setChecked(True)
         form(body, [("Algorithm", self.algo), ("Time Quantum", self.quantum)])
@@ -196,6 +203,10 @@ class CpuPage(ModulePage):
 
     def load_sample(self):
         self.table.set_rows(cpuScheduling.SAMPLE)
+
+    def quantum_value(self):
+        q = self.quantum.value()
+        return int(q) if q == int(q) else q  # 2.0 -> 2, 0.5 stays 0.5
 
     def randomize(self):
         self.table.set_rows([(p.pid, p.arrival, p.burst, p.priority)

@@ -384,8 +384,10 @@ def _preemptive(name, procs, key):
 
 
 def round_robin(procs: List[Process], quantum: int) -> ScheduleResult:
-    if quantum < 1:
-        raise InputError("Round Robin: the time quantum must be at least 1.")
+    if quantum < 0:
+        raise InputError("Round Robin: the time quantum cannot be negative.")
+    if quantum == 0:
+        raise InputError("Round Robin: the time quantum cannot be zero.")
     n = len(procs)
     order = _arrival_order(procs)
     rem = [p.burst for p in procs]
@@ -402,8 +404,8 @@ def round_robin(procs: List[Process], quantum: int) -> ScheduleResult:
         i = queue.popleft()
         run = min(quantum, rem[i])
         timeline.append((procs[i].pid, time, time + run))
-        time += run
-        rem[i] -= run
+        time = round(time + run, 6)
+        rem[i] = round(rem[i] - run, 6)
         # processes that arrived during this slice enter the queue BEFORE the preempted one
         while ptr < n and procs[order[ptr]].arrival <= time:
             queue.append(order[ptr]); ptr += 1
