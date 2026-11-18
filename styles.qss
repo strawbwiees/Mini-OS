@@ -178,12 +178,37 @@ QPlainTextEdit#logView {
 }
 
 /* ---------- scrollbars ---------- */
-QScrollBar:vertical { background: transparent; width: 12px; margin: 2px; }
-QScrollBar::handle:vertical { background: #CFC4F7; border-radius: 5px; min-height: 30px; }
+QScrollBar:vertical {
+    background: #ddd7ee;             /* the track */
+    width: 14px;
+    margin: 0px;
+    border-radius: 7px;              /* half of the width = fully round track */
+}
+QScrollBar::handle:vertical {
+    background: #B9ABF0;
+    min-height: 36px;
+    margin: 3px;                     /* gap so the handle floats inside the track */
+    border-radius: 4px;              /* half of (14 - 3 - 3) = fully round handle */
+}
+QScrollBar::handle:vertical:hover { background: #9380F2; }
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
-QScrollBar:horizontal { background: transparent; height: 12px; margin: 2px; }
-QScrollBar::handle:horizontal { background: #CFC4F7; border-radius: 5px; min-width: 30px; }
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical { background: none; }
+
+QScrollBar:horizontal {
+    background: #F0EBFF;
+    height: 14px;
+    margin: 0px;
+    border-radius: 7px;
+}
+QScrollBar::handle:horizontal {
+    background: #B9ABF0;
+    min-width: 36px;
+    margin: 3px;
+    border-radius: 4px;
+}
+QScrollBar::handle:horizontal:hover { background: #9380F2; }
 QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal { width: 0; }
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal { background: none; }
 QScrollArea { background: transparent; border: none; }
 QScrollArea > QWidget > QWidget { background: transparent; }
 
