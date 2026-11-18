@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import random
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QBrush, QColor
+from PySide6.QtGui import QBrush, QColor, QDoubleValidator
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFrame,
                                QHBoxLayout, QHeaderView, QLineEdit,
                                QMessageBox, QPlainTextEdit, QPushButton,
@@ -178,12 +178,8 @@ class CpuPage(ModulePage):
         self.algo.addItems(cpuScheduling.ALGORITHMS)
         self.algo.setCurrentText("Round Robin")
 
-        self.quantum = QDoubleSpinBox()
-        self.quantum.setDecimals(2)  # how many decimal places it allows
-        self.quantum.setRange(0.01, 1000)
-        self.quantum.setSingleStep(0.5)  # arrow / mouse-wheel step
-        self.quantum.setValue(2)
-        self.quantum.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
+        self.quantum = line("2", "e.g. 2 or 0.5")
+        self.quantum.setValidator(QDoubleValidator(0.01, 1000.0, 2))  # numbers only, up to 2 decimals
 
         self.low_first = QCheckBox("Lower number = higher priority")
         self.low_first.setChecked(True)
@@ -205,8 +201,14 @@ class CpuPage(ModulePage):
         self.table.set_rows(cpuScheduling.SAMPLE)
 
     def quantum_value(self):
-        q = self.quantum.value()
-        return int(q) if q == int(q) else q  # 2.0 -> 2, 0.5 stays 0.5
+        text = self.quantum.text().strip().replace(",", ".")
+        try:
+            q = float(text)
+        except ValueError:
+            raise cpuScheduling.InputError("Time quantum: enter a number such as 2 or 0.5.") from None
+        if q <= 0:
+            raise cpuScheduling.InputError("Time quantum: must be greater than 0.")
+        return int(q) if q == int(q) else q
 
     def randomize(self):
         self.table.set_rows([(p.pid, p.arrival, p.burst, p.priority)
@@ -226,9 +228,9 @@ class CpuPage(ModulePage):
         return procs
 
     def schedule(self, name):
-        return cpuScheduling.run_algorithm(name, self.read_processes(), self.quantum.value(),
-                                            self.low_first.isChecked())
-
+        # schedule()
+        return cpuScheduling.run_algorithm(name, self.read_processes(), self.quantum_value(),
+                                           self.low_first.isChecked())
     def run(self):
         res = self.schedule(self.algo.currentText())
         self.clear_results()

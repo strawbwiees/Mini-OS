@@ -117,7 +117,7 @@ QPushButton#rowDelete { background: transparent; border: none; color: #9A8BD0; f
 QPushButton#rowDelete:hover { background-color: #FFE0E8; color: #B3365A; }
 
 /* ---------- inputs ---------- */
-QComboBox, QSpinBox, QLineEdit {
+QComboBox, QAbstractSpinBox, QLineEdit {
     background-color: #FFFFFF;
     color: #30245F;
     border: 1px solid #D3C8F5;
@@ -126,8 +126,17 @@ QComboBox, QSpinBox, QLineEdit {
     selection-background-color: #C9C2F6;
     selection-color: #30245F;
 }
-QComboBox:focus, QSpinBox:focus, QLineEdit:focus { border: 1px solid #7560CC; }
-QComboBox:disabled, QSpinBox:disabled { background-color: #F3F0FB; color: #A59BCB; }
+QAbstractSpinBox QLineEdit {          /* the text box inside the spinbox */
+    background-color: transparent;
+    color: #30245F;                   /* typed text AND the blinking cursor */
+    border: none;
+    padding: 0;
+    selection-background-color: #C9C2F6;
+    selection-color: #30245F;
+}
+QComboBox:focus, QAbstractSpinBox:focus, QLineEdit:focus { border: 1px solid #7560CC; }
+QComboBox:disabled, QAbstractSpinBox:disabled { background-color: #F3F0FB; color: #A59BCB; }
+
 QComboBox QAbstractItemView {
     background-color: #FFFFFF;
     color: #30245F;
