@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QFont
+from PySide6.QtGui import QFont, QFontDatabase
 from PySide6.QtWidgets import QApplication
 
 from main_window import load_main_window
@@ -18,9 +18,12 @@ def main():
     app.styleHints().setColorScheme(Qt.ColorScheme.Light)
     app.setApplicationName("Operating System Simulator")
 
-    # Century Gothic (from the original stylesheet) with sensible fallbacks.
+    # Load every font file in ./fonts (Fredoka), then use it with fallbacks.
+    fonts_dir = Path(__file__).resolve().parent / "fonts"
+    for f in fonts_dir.glob("*.ttf"):
+        QFontDatabase.addApplicationFont(str(f))
     font = QFont()
-    font.setFamilies(["Century Gothic", "Poppins", "Segoe UI", "Helvetica Neue", "Arial"])
+    font.setFamilies(["Fredoka", "Poppins", "Segoe UI", "Helvetica Neue", "Arial"])
     font.setPointSize(10)
     app.setFont(font)
 

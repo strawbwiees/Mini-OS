@@ -37,6 +37,13 @@ def load_main_window(ui_path: Path):
     if window is None:
         raise RuntimeError(f"Cannot load {ui_path}: {loader.errorString()}")
 
+    # the .ui file hard-codes Century Gothic on its widgets; switch them to Fredoka
+    for w in [window, *window.findChildren(QWidget)]:
+        f = w.font()
+        if f.family() == "Century Gothic":
+            f.setFamily("Fredoka")
+            w.setFont(f)
+
     def find(cls, name):
         found = window.findChild(cls, name)
         if found is None:
@@ -141,6 +148,8 @@ def load_main_window(ui_path: Path):
     # 4) status bar from the .ui replaces my custom footer
     window.menuBar().hide()
     bar = window.statusBar()
+    bar.hide()                    # status bar removed from the window
+    bar.setSizeGripEnabled(False)
 
     def show_status(message: str, is_error: bool) -> None:
         bar.setStyleSheet("color: #B3365A;" if is_error else "")
