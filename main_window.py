@@ -10,11 +10,11 @@ from pathlib import Path
 
 from PySide6.QtCore import QFile, QIODevice, Qt
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtWidgets import (QButtonGroup, QFrame, QPushButton, QStackedWidget,
+from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import (QButtonGroup, QFrame, QLabel, QPushButton, QStackedWidget,
                                QVBoxLayout, QWidget)
 
-from pages import ALL_PAGES
-from widgets import MonitorIcon
+from pages import ALL_PAGES, HomePage
 
 # object names used inside main_window.ui, in the same order as pages.ALL_PAGES
 BUTTON_NAMES = ["btnCpuScheduling", "btnBankers", "btnPaging", "btnPageReplacement",
@@ -23,6 +23,8 @@ BUTTON_NAMES = ["btnCpuScheduling", "btnBankers", "btnPaging", "btnPageReplaceme
 # CPU-only placeholder panels in the .ui; the real pages replace them
 PLACEHOLDERS = ["pageHeadingWidget", "upperPanel_widget", "resultsWidget"]
 READY = "Ready to simulate..."
+LOGO_PATH = Path(__file__).resolve().parent / "miniOSLogo.png"   # keep the logo next to this file
+LOGO_HEIGHT = 60
 
 
 def load_main_window(ui_path: Path):
@@ -62,7 +64,16 @@ def load_main_window(ui_path: Path):
     root.addWidget(header)
     root.addWidget(body, 1)
     if header.layout() is not None:
-        header.layout().insertWidget(0, MonitorIcon())
+        pix = QPixmap(str(LOGO_PATH))
+        if pix.isNull():
+            print(f"WARNING: logo not found or unreadable: {LOGO_PATH}")
+        else:
+            logo = QLabel()
+            logo.setStyleSheet("background: transparent;")
+            scaled = pix.scaledToHeight(LOGO_HEIGHT, Qt.TransformationMode.SmoothTransformation)
+            logo.setPixmap(scaled)
+            logo.setFixedSize(scaled.size())      # stop the label stretching and pushing the title
+            header.layout().insertWidget(0, logo)
     body.layout().setContentsMargins(0, 0, 0, 0)
     body.layout().setSpacing(14)
     body.layout().setStretchFactor(work, 1)
@@ -75,6 +86,35 @@ def load_main_window(ui_path: Path):
     side_layout = QVBoxLayout(side)
     side_layout.setContentsMargins(12, 14, 12, 14)
     side_layout.setSpacing(8)
+
+    # Home button lives in its own box ABOVE the sidebar, separate from the module buttons
+    home_btn = QPushButton("HOME")
+    home_btn.setObjectName("btnHome")
+    home_btn.setCheckable(True)
+    home_btn.setMinimumHeight(44)
+    home_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+    group.addButton(home_btn)
+    home_box = QFrame()
+    home_box.setObjectName("homeBox")
+    box_layout = QVBoxLayout(home_box)
+    box_layout.setContentsMargins(12, 10, 12, 10)
+    box_layout.addWidget(home_btn)
+    column = QWidget()                       # stands in for the sidebar: [Home box] + [sidebar]
+    column_layout = QVBoxLayout(column)
+    column_layout.setContentsMargins(0, 0, 0, 0)
+    column_layout.setSpacing(10)
+    body_layout = body.layout()
+    slot = body_layout.indexOf(side)
+    body_layout.removeWidget(side)
+    column_layout.addWidget(home_box)
+    column_layout.addWidget(side, 1)
+    body_layout.insertWidget(slot, column)
+
+    modules_title = QLabel("Modules")
+    modules_title.setObjectName("modulesTitle")
+    modules_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    side_layout.addWidget(modules_title)
+
     for i, btn in enumerate(buttons):
         btn.setCheckable(True)
         btn.setMinimumHeight(44)
@@ -106,6 +146,9 @@ def load_main_window(ui_path: Path):
         bar.setStyleSheet("color: #B3365A;" if is_error else "")
         bar.showMessage(message)
 
+    home = HomePage()                        # stack index 0; module pages follow at index + 1
+    home.open_module.connect(lambda k: go(k))
+    stack.addWidget(home)
     pages = []
     for cls in ALL_PAGES:
         page = cls()
@@ -114,14 +157,21 @@ def load_main_window(ui_path: Path):
         pages.append(page)
 
     def go(index: int) -> None:
-        stack.setCurrentIndex(index)
+        stack.setCurrentIndex(index + 1)
         buttons[index].setChecked(True)
         show_status(READY, False)
+
+    def go_home() -> None:
+        stack.setCurrentIndex(0)
+        home_btn.setChecked(True)
+        show_status("Welcome! Pick a module from the sidebar to begin.", False)
+
+    home_btn.clicked.connect(lambda checked=False: go_home())
 
     window._pages, window._group, window._stack = pages, group, stack   # keep alive
     if window.windowTitle() in ("", "MainWindow"):
         window.setWindowTitle("Operating System Simulator")
     window.setMinimumSize(980, 660)
     window.resize(max(window.width(), 1100), max(window.height(), 800))
-    go(0)
+    go_home()
     return window

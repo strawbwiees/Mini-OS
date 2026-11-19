@@ -6,7 +6,7 @@ import random
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QDoubleValidator
 from PySide6.QtWidgets import (QAbstractItemView, QCheckBox, QComboBox, QFrame,
-                               QHBoxLayout, QHeaderView, QLineEdit,
+                               QGridLayout, QHBoxLayout, QHeaderView, QLineEdit,
                                QMessageBox, QPlainTextEdit, QPushButton,
                                QScrollArea, QSpinBox, QTableWidget,
                                QTableWidgetItem, QVBoxLayout, QWidget, QAbstractSpinBox, QDoubleSpinBox)
@@ -847,6 +847,104 @@ class MultiprogPage(ModulePage):
         log.setFixedHeight(190)
         self.add(log)
         self.ok(f"Multiprogramming complete: CPU utilization {m['cpu_utilization']:.1f}%")
+
+
+# ==========================================================================
+# 0. Home page (not a simulator - the welcome screen)
+# ==========================================================================
+HOME_MODULES = [   # same order as ALL_PAGES / the sidebar buttons
+    ("CPU Scheduling", "Processes",
+     "FCFS, SJF, SRTF, Priority and Round Robin, with Gantt charts and average waiting / turnaround times."),
+    ("Banker's Algorithm", "Processes",
+     "Check whether a system state is safe and test resource requests to avoid deadlock."),
+    ("Paging", "Memory",
+     "Split processes into pages and frames, then translate logical addresses to physical ones."),
+    ("Page Replacement", "Memory",
+     "FIFO, LRU, Optimal and Second Chance, with page-fault and hit counts."),
+    ("Segmentation", "Memory",
+     "Build a segment table and translate (segment, offset) addresses with limit checks."),
+    ("Fragmentation", "Memory",
+     "First, Best, Worst and Next Fit - see internal and external fragmentation on a memory map."),
+    ("Disk Scheduling", "Storage",
+     "FCFS, SSTF, SCAN, C-SCAN, LOOK and C-LOOK, with a head-movement path and total seek distance."),
+    ("Multiprogramming", "Processes",
+     "Overlap CPU and I/O work under a memory limit to raise utilisation."),
+]
+
+
+class ModuleCard(QFrame):
+    """A whole card that behaves like a button: hover highlight + click."""
+    clicked = Signal()
+
+    def __init__(self):
+        super().__init__()
+        self.setObjectName("moduleCard")
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton and self.rect().contains(event.position().toPoint()):
+            self.clicked.emit()
+        super().mouseReleaseEvent(event)
+
+
+class HomePage(QWidget):
+    open_module = Signal(int)           # index into ALL_PAGES
+
+    def __init__(self):
+        super().__init__()
+        root = QVBoxLayout(self)
+        root.setContentsMargins(22, 16, 16, 12)
+        root.setSpacing(2)
+        root.addWidget(label("Welcome to your Mini OS!", "moduleTitleLabel"))
+        root.addWidget(label("See how an operating system really works - type in some data, press run, "
+                             "and watch the algorithms think.", "moduleSubtitleLabel", wrap=True))
+
+        scroll = QScrollArea()
+        scroll.setObjectName("pageScroll")
+        scroll.setWidgetResizable(True)
+        scroll.setFrameShape(QFrame.Shape.NoFrame)
+        host = QWidget()
+        host.setObjectName("pageHost")
+        col = QVBoxLayout(host)
+        col.setContentsMargins(0, 10, 8, 6)
+        col.setSpacing(14)
+
+        how = Card("How it works")
+        how.body.addWidget(tiles([("Choose a simulator from the sidebar.", "1. Pick a module"),
+                                  ("Fill in the tables, or press Load Sample / Random.", "2. Enter data"),
+                                  ("Press Run Simulation and study the charts and tables.", "3. Run & read")],
+                                 columns=3))
+        col.addWidget(how)
+
+        col.addWidget(section("Modules"))
+        grid = QGridLayout()
+        grid.setSpacing(12)
+        for i, (name, tag, text) in enumerate(HOME_MODULES):
+            card = ModuleCard()
+            card.clicked.connect(lambda k=i: self.open_module.emit(k))
+            lay = QVBoxLayout(card)
+            lay.setContentsMargins(14, 12, 14, 12)
+            lay.setSpacing(4)
+            lay.addWidget(label(tag.upper(), "moduleTag"))
+            lay.addWidget(section(name))
+            lay.addWidget(hint(text))
+            lay.addStretch(1)
+            grid.addWidget(card, i // 2, i % 2)
+        grid.setColumnStretch(0, 1)
+        grid.setColumnStretch(1, 1)
+        col.addLayout(grid)
+
+        tips = Card("Good to know")
+        for t in ("Every page has Load Sample, so you can try it with one click.",
+                  "Bad input (blank, negative, out of range) shows a clear message instead of crashing.",
+                  "In CPU Scheduling, Compare All runs every algorithm side by side."):
+            tips.body.addWidget(hint("\u2022  " + t))
+        col.addWidget(tips)
+        col.addStretch(1)
+        scroll.setWidget(host)
+        scroll.viewport().setAutoFillBackground(False)
+        root.addWidget(scroll, 1)
 
 
 ALL_PAGES = [CpuPage, BankersPage, PagingPage, ReplacementPage, SegmentationPage,

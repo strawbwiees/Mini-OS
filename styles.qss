@@ -216,3 +216,30 @@ QScrollArea > QWidget > QWidget { background: transparent; }
 QStatusBar { background-color: #E7DFFF; color: #30245F; border-top: 1px solid #D1C4F7; font-size: 13px; }
 QStatusBar::item { border: none; }
 QWidget#workspaceWidget { background: transparent; }
+
+
+/* ---------- home button + home page ---------- */
+QFrame#homeBox {
+    background-color: #F0EAFE;
+    border: 1px solid #DDD2FA;
+    border-radius: 16px;
+}
+QPushButton#btnHome {
+    background-color: #FFFFFF;
+    color: #40318A;
+    border: 1px solid #DCD1FA;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: bold;
+}
+QPushButton#btnHome:hover { background-color: #E8E0FF; }
+QPushButton#btnHome:checked {
+    background-color: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #4A3590, stop:1 #9380F2);
+    color: #FFFFFF;
+    border: 1px solid #5945A0;
+}
+QLabel#modulesTitle { color: #261A58; font-size: 18px; font-weight: bold; background: transparent; padding: 2px 0 6px 0; }
+QFrame#moduleCard { background-color: #FFFFFF; border: 1px solid #D9CEFA; border-radius: 12px; }
+QFrame#moduleCard:hover { background-color: #F3EEFF; border: 1px solid #7560CC; }
+QLabel#moduleTag { color: #7560CC; font-size: 11px; font-weight: bold; background: transparent; }
