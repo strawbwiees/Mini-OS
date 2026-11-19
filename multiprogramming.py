@@ -9,6 +9,7 @@ import random
 import re
 from collections import deque
 from dataclasses import dataclass
+from fractions import Fraction
 from typing import Dict, List, Tuple
 
 
@@ -43,6 +44,35 @@ def parse_int(text, label, minimum=None, maximum=None):
     if maximum is not None and value > maximum:
         raise InputError(f"{label}: must be at most {maximum} (got {value}).")
     return value
+
+
+def clean(x):
+    """Round away float noise (0.1+0.2) and turn 5.0 into 5 so tables look tidy."""
+    x = round(float(x), 6)
+    return int(x) if x == int(x) else x
+
+
+def parse_number(text, label, minimum=None, positive=False):
+    """Like parse_int but accepts decimals (1.2, ',' also allowed).
+
+    ``minimum`` rejects smaller values; ``positive=True`` requires a value > 0.
+    """
+    s = "" if text is None else str(text).strip().replace(",", ".")
+    if s == "":
+        raise InputError(f"{label}: the field is blank.")
+    try:
+        value = float(s)
+    except ValueError:
+        raise InputError(f"{label}: '{s}' is not a valid number.") from None
+    if value != value or value in (float("inf"), float("-inf")):
+        raise InputError(f"{label}: '{s}' is not a valid number.")
+    if positive and value <= 0:
+        raise InputError(f"{label}: must be greater than 0 (got {s}).")
+    if minimum is not None and value < minimum:
+        if minimum == 0:
+            raise InputError(f"{label}: negative values are not allowed (got {s}).")
+        raise InputError(f"{label}: must be at least {minimum} (got {s}).")
+    return clean(value)
 
 
 def parse_int_list(text, label, minimum=None, maximum=None, min_count=1):
@@ -93,6 +123,19 @@ def ask_int(prompt, minimum=None, maximum=None, default=None):
             return default
         try:
             return parse_int(text, "Input", minimum, maximum)
+        except InputError as exc:
+            print("  ! " + str(exc))
+
+
+def ask_number(prompt, minimum=None, positive=False, default=None):
+    """Like ask_int but decimals (e.g. 0.5) are accepted."""
+    while True:
+        shown = prompt + (f" [{default}]" if default is not None else "") + ": "
+        text = ask_text(shown)
+        if text == "" and default is not None:
+            return default
+        try:
+            return parse_number(text, "Input", minimum, positive)
         except InputError as exc:
             print("  ! " + str(exc))
 
@@ -227,26 +270,32 @@ def text_gantt(segments, per_line=12, limit=96):
 # Programs that need more memory than the whole system are rejected.
 
 MAX_WORK = 3_000_000          # safety limit on total simulated time units
+MAX_EVENTS = 3_000_000        # safety limit on simulation steps (tiny quanta create many)
 
 
 @dataclass
 class Program:
     name: str
-    arrival: int
-    memory: int
-    cpu: int
-    io: int = 0
+    arrival: float
+    memory: float
+    cpu: float
+    io: float = 0
 
 
 @dataclass
 class MPResult:
     rows: List[Dict]
     rejected: List[Program]
-    cpu_segments: List[Tuple[str, int, int]]
-    io_segments: List[Tuple[str, int, int]]
-    mem_samples: List[Tuple[int, int, int]]       # (time, memory used, programs in memory)
+    cpu_segments: List[Tuple[str, float, float]]
+    io_segments: List[Tuple[str, float, float]]
+    mem_samples: List[Tuple[float, float, int]]   # (time, memory used, programs in memory)
     log: List[str]
     metrics: Dict[str, float]
+
+
+def _fr(x) -> Fraction:
+    """Exact rational value, so decimals like 0.1 never accumulate float error."""
+    return x if isinstance(x, Fraction) else Fraction(str(x))
 
 
 def _add_seg(segs, name, s, e):
@@ -256,12 +305,13 @@ def _add_seg(segs, name, s, e):
         segs.append((name, s, e))
 
 
-def simulate(programs: List[Program], total_memory: int, quantum: int,
+def simulate(programs: List[Program], total_memory: float, quantum: float,
              max_degree: int = 0) -> MPResult:
-    if total_memory < 1:
-        raise InputError("Multiprogramming: total memory must be at least 1.")
-    if quantum < 1:
-        raise InputError("Multiprogramming: the time quantum must be at least 1.")
+    """Event-driven simulation.  Times, memory sizes and the quantum may be decimals."""
+    if total_memory <= 0:
+        raise InputError("Multiprogramming: total memory must be greater than 0.")
+    if quantum <= 0:
+        raise InputError("Multiprogramming: the time quantum must be greater than 0.")
     if max_degree < 0:
         raise InputError("Multiprogramming: the degree limit cannot be negative (0 = unlimited).")
     if not programs:
@@ -271,57 +321,69 @@ def simulate(programs: List[Program], total_memory: int, quantum: int,
     for p in programs:
         if not p.name:
             raise InputError("Multiprogramming: a program has a blank name.")
-        if p.arrival < 0 or p.memory < 1 or p.cpu < 1 or p.io < 0:
-            raise InputError(f"{p.name}: arrival/I-O must be >= 0 and memory/CPU burst >= 1.")
-    rejected = [p for p in programs if p.memory > total_memory]
-    jobs = [p for p in programs if p.memory <= total_memory]
+        if p.arrival < 0 or p.memory <= 0 or p.cpu <= 0 or p.io < 0:
+            raise InputError(f"{p.name}: arrival/I-O must be >= 0 and memory/CPU burst > 0.")
+    total_mem = _fr(total_memory)
+    q = _fr(quantum)
+    rejected = [p for p in programs if _fr(p.memory) > total_mem]
+    jobs = [p for p in programs if _fr(p.memory) <= total_mem]
     if not jobs:
         raise InputError("Multiprogramming: every program needs more memory than the system has.")
-    if sum(p.cpu + p.io for p in jobs) > MAX_WORK:
+    if sum(_fr(p.cpu) + _fr(p.io) for p in jobs) > MAX_WORK:
         raise InputError(f"Multiprogramming: total CPU+I/O time exceeds {MAX_WORK:,} units; "
                          "please reduce the burst times.")
 
     n = len(jobs)
-    order = sorted(range(n), key=lambda i: (jobs[i].arrival, i))
-    rem_cpu = [p.cpu for p in jobs]
-    rem_io = [p.io for p in jobs]
+    arr = [_fr(p.arrival) for p in jobs]
+    mem = [_fr(p.memory) for p in jobs]
+    order = sorted(range(n), key=lambda i: (arr[i], i))
+    rem_cpu = [_fr(p.cpu) for p in jobs]
+    rem_io = [_fr(p.io) for p in jobs]
     admit, first_cpu, finish = [None] * n, [None] * n, [None] * n
     waiting, ready, ioq = [], deque(), deque()
     cpu_cur = io_cur = None
-    slice_used = 0
-    in_mem = mem_used = 0
-    ptr = done = 0
-    t = t0 = jobs[order[0]].arrival
-    cpu_busy = io_busy = mem_area = deg_area = max_deg = 0
-    cpu_seg, io_seg, samples, log = [], [], [(t, 0, 0)], []
+    slice_used = Fraction(0)
+    in_mem = ptr = done = events = 0
+    mem_used = Fraction(0)
+    t = t0 = arr[order[0]]
+    cpu_busy = io_busy = mem_area = deg_area = Fraction(0)
+    max_deg = 0
+    cpu_seg, io_seg, log = [], [], []
+    samples = [(clean(t), 0, 0)]
     dirty = True
+
+    def c(x):                                    # exact Fraction -> tidy number for display
+        return clean(float(x))
+
+    def sample():
+        samples.append((c(t), c(mem_used), in_mem))
 
     def complete(i):
         nonlocal in_mem, mem_used, done, dirty
         finish[i] = t
         in_mem -= 1
-        mem_used -= jobs[i].memory
+        mem_used -= mem[i]
         done += 1
         dirty = True
-        log.append(f"t={t}: {jobs[i].name} finished; memory freed "
-                   f"({mem_used}/{total_memory} used)")
-        samples.append((t, mem_used, in_mem))
+        log.append(f"t={c(t)}: {jobs[i].name} finished; memory freed "
+                   f"({c(mem_used)}/{c(total_mem)} used)")
+        sample()
 
     while done < n:
-        while ptr < n and jobs[order[ptr]].arrival <= t:
+        while ptr < n and arr[order[ptr]] <= t:
             i = order[ptr]; ptr += 1
             waiting.append(i); dirty = True
-            log.append(f"t={t}: {jobs[i].name} arrived (needs {jobs[i].memory} memory)")
+            log.append(f"t={c(t)}: {jobs[i].name} arrived (needs {c(mem[i])} memory)")
         if dirty and waiting:
             still = []
             for i in waiting:
                 if (max_degree == 0 or in_mem < max_degree) and \
-                        mem_used + jobs[i].memory <= total_memory:
-                    in_mem += 1; mem_used += jobs[i].memory
+                        mem_used + mem[i] <= total_mem:
+                    in_mem += 1; mem_used += mem[i]
                     admit[i] = t; ready.append(i)
-                    log.append(f"t={t}: {jobs[i].name} admitted to memory "
-                               f"({mem_used}/{total_memory} used, degree={in_mem})")
-                    samples.append((t, mem_used, in_mem))
+                    log.append(f"t={c(t)}: {jobs[i].name} admitted to memory "
+                               f"({c(mem_used)}/{c(total_mem)} used, degree={in_mem})")
+                    sample()
                 else:
                     still.append(i)
             waiting = still
@@ -330,62 +392,80 @@ def simulate(programs: List[Program], total_memory: int, quantum: int,
 
         if cpu_cur is None and not ready and io_cur is None and not ioq:
             if ptr < n:                                   # system idle: jump to next arrival
-                t = jobs[order[ptr]].arrival
-                samples.append((t, mem_used, in_mem))
+                t = arr[order[ptr]]
+                sample()
                 continue
             break
 
-        if cpu_cur is not None and slice_used >= quantum:  # quantum expired -> back of queue
+        if cpu_cur is not None and slice_used >= q:       # quantum expired -> back of queue
             ready.append(cpu_cur); cpu_cur = None
         if cpu_cur is None and ready:
-            cpu_cur = ready.popleft(); slice_used = 0
+            cpu_cur = ready.popleft(); slice_used = Fraction(0)
             if first_cpu[cpu_cur] is None:
                 first_cpu[cpu_cur] = t
         if io_cur is None and ioq:
             io_cur = ioq.popleft()
 
-        mem_area += mem_used
-        deg_area += in_mem
+        # advance to the next event: a burst ends, the quantum ends, or a program arrives
+        steps = []
+        if cpu_cur is not None:
+            steps += [rem_cpu[cpu_cur], q - slice_used]
+        if io_cur is not None:
+            steps.append(rem_io[io_cur])
+        if ptr < n:
+            steps.append(arr[order[ptr]] - t)
+        dt = min(steps)
+        events += 1
+        if events > MAX_EVENTS:
+            raise InputError("Multiprogramming: the simulation needs too many steps; "
+                             "use a larger time quantum or shorter bursts.")
+
+        mem_area += mem_used * dt
+        deg_area += in_mem * dt
         cpu_i, io_i = cpu_cur, io_cur
         if cpu_i is not None:
-            rem_cpu[cpu_i] -= 1; slice_used += 1; cpu_busy += 1
-            _add_seg(cpu_seg, jobs[cpu_i].name, t, t + 1)
+            rem_cpu[cpu_i] -= dt; slice_used += dt; cpu_busy += dt
+            _add_seg(cpu_seg, jobs[cpu_i].name, t, t + dt)
         if io_i is not None:
-            rem_io[io_i] -= 1; io_busy += 1
-            _add_seg(io_seg, jobs[io_i].name, t, t + 1)
-        t += 1
+            rem_io[io_i] -= dt; io_busy += dt
+            _add_seg(io_seg, jobs[io_i].name, t, t + dt)
+        t += dt
 
         if cpu_i is not None and rem_cpu[cpu_i] == 0:
             cpu_cur = None
-            if jobs[cpu_i].io > 0:
+            if _fr(jobs[cpu_i].io) > 0:
                 ioq.append(cpu_i)
-                log.append(f"t={t}: {jobs[cpu_i].name} finished CPU burst, waiting for I/O")
+                log.append(f"t={c(t)}: {jobs[cpu_i].name} finished CPU burst, waiting for I/O")
             else:
                 complete(cpu_i)
         if io_i is not None and rem_io[io_i] == 0:
             io_cur = None
             complete(io_i)
 
-    horizon = max(t - t0, 1)
+    horizon = t - t0
+    if horizon <= 0:
+        horizon = Fraction(1)
     rows = []
     for i, p in enumerate(jobs):
-        tat = finish[i] - p.arrival
-        rows.append({"name": p.name, "arrival": p.arrival, "memory": p.memory,
-                     "cpu": p.cpu, "io": p.io, "admitted": admit[i],
-                     "mem_wait": admit[i] - p.arrival, "first_cpu": first_cpu[i],
-                     "finish": finish[i], "turnaround": tat,
-                     "waiting": tat - p.cpu - p.io})
+        tat = finish[i] - arr[i]
+        rows.append({"name": p.name, "arrival": c(arr[i]), "memory": c(mem[i]),
+                     "cpu": c(_fr(p.cpu)), "io": c(_fr(p.io)), "admitted": c(admit[i]),
+                     "mem_wait": c(admit[i] - arr[i]), "first_cpu": c(first_cpu[i]),
+                     "finish": c(finish[i]), "turnaround": c(tat),
+                     "waiting": c(tat - _fr(p.cpu) - _fr(p.io))})
     metrics = {
-        "makespan": horizon,
-        "cpu_utilization": 100.0 * cpu_busy / horizon,
-        "io_utilization": 100.0 * io_busy / horizon,
-        "memory_utilization": 100.0 * mem_area / (horizon * total_memory),
-        "throughput": n / horizon,
+        "makespan": c(horizon),
+        "cpu_utilization": float(100 * cpu_busy / horizon),
+        "io_utilization": float(100 * io_busy / horizon),
+        "memory_utilization": float(100 * mem_area / (horizon * total_mem)),
+        "throughput": float(n / horizon),
         "avg_turnaround": sum(r["turnaround"] for r in rows) / n,
         "avg_mem_wait": sum(r["mem_wait"] for r in rows) / n,
-        "avg_degree": deg_area / horizon,
+        "avg_degree": float(deg_area / horizon),
         "max_degree": max_deg,
     }
+    cpu_seg = [(nm, c(a), c(b)) for nm, a, b in cpu_seg]
+    io_seg = [(nm, c(a), c(b)) for nm, a, b in io_seg]
     return MPResult(rows, rejected, cpu_seg, io_seg, samples, log, metrics)
 
 
@@ -401,9 +481,10 @@ SAMPLE = [("J1", 0, 120, 6, 4), ("J2", 1, 200, 5, 3), ("J3", 2, 150, 8, 2),
 def to_program(tok, n):
     if len(tok) not in (4, 5):
         raise InputError(f"Row {n}: expected 'name arrival memory cpu [io]'.")
-    return Program(tok[0], parse_int(tok[1], f"Row {n} arrival", 0), parse_int(tok[2], f"Row {n} memory", 1),
-                      parse_int(tok[3], f"Row {n} CPU burst", 1),
-                      parse_int(tok[4], f"Row {n} I/O burst", 0) if len(tok) == 5 else 0)
+    return Program(tok[0], parse_number(tok[1], f"Row {n} arrival", 0),
+                      parse_number(tok[2], f"Row {n} memory", positive=True),
+                      parse_number(tok[3], f"Row {n} CPU burst", positive=True),
+                      parse_number(tok[4], f"Row {n} I/O burst", 0) if len(tok) == 5 else 0)
 
 
 def main():
@@ -414,11 +495,11 @@ def main():
         if src == 3:
             print("Goodbye.")
             return
-        total = ask_int("Total memory", 1, default=1024 if src != 2 else 4096)
-        quantum = ask_int("Time quantum", 1, default=2)
+        total = ask_number("Total memory", positive=True, default=1024 if src != 2 else 4096)
+        quantum = ask_number("Time quantum", positive=True, default=2)
         degree = ask_int("Max degree of multiprogramming (0 = unlimited)", 0, default=0)
         if src == 0:
-            progs = read_rows("Enter the programs", "name arrival memory cpu_burst [io_burst]   e.g.  J1 0 120 6 4", to_program)
+            progs = read_rows("Enter the programs", "name arrival memory cpu_burst [io_burst]   e.g.  J1 0 120 6 4  (decimals OK: J2 0.5 80 2.5 1.2)", to_program)
         elif src == 1:
             progs = [Program(*row) for row in SAMPLE]
         else:

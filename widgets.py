@@ -166,8 +166,8 @@ def make_table(headers: Sequence[str], rows: Sequence[Sequence],
     table.setWordWrap(True)
     hdr = table.horizontalHeader()
     hdr.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-    hdr.setFixedHeight(34)
-    table.verticalHeader().setDefaultSectionSize(30)
+    hdr.setFixedHeight(38)
+    table.verticalHeader().setDefaultSectionSize(34)
     for r, row in enumerate(rows):
         for c, value in enumerate(row):
             item = QTableWidgetItem("" if value is None else str(value))
@@ -181,7 +181,7 @@ def make_table(headers: Sequence[str], rows: Sequence[Sequence],
                 item.setFont(font)
                 item.setBackground(QBrush(QColor(LAVENDER)))
             table.setItem(r, c, item)
-    table.setFixedHeight(min(34 + 30 * len(rows) + 4, max_height))
+    table.setFixedHeight(min(38 + 34 * len(rows) + 4, max_height))
     return table
 
 
@@ -205,10 +205,10 @@ class RowTable(QWidget):
         hdr = self.table.horizontalHeader()
         hdr.setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         hdr.setSectionResizeMode(self._cols, QHeaderView.ResizeMode.Fixed)
-        hdr.setFixedHeight(36)
+        hdr.setFixedHeight(40)
         self.table.setColumnWidth(self._cols, 46)
         self.table.verticalHeader().setVisible(False)
-        self.table.verticalHeader().setDefaultSectionSize(42)
+        self.table.verticalHeader().setDefaultSectionSize(46)
         self.table.setMinimumHeight(min_height)
         lay.addWidget(self.table)
         add = QPushButton(add_text)

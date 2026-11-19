@@ -5,7 +5,7 @@ QMainWindow,
 QWidget#centralwidget {
     background-color: #F5F1FF;
     color: #30245F;
-    font-size: 14px;
+    font-size: 15px;
 }
 
 /* ---------- header ---------- */
@@ -14,8 +14,8 @@ QFrame#headerFrame {
     border: 1px solid #5945A0;
     border-radius: 18px;
 }
-QLabel#appTitleLabel { color: #FFFFFF; font-size: 28px; font-weight: bold; background: transparent; }
-QLabel#appSubtitleLabel { color: #D9D0FF; font-size: 17px; background: transparent; }
+QLabel#appTitleLabel { color: #FFFFFF; font-size: 30px; font-weight: bold; background: transparent; }
+QLabel#appSubtitleLabel { color: #D9D0FF; font-size: 18px; background: transparent; }
 
 /* ---------- sidebar ---------- */
 QWidget#sideBarWidget {
@@ -31,7 +31,7 @@ QPushButton#btnDiskScheduling, QPushButton#btnMultiprogramming {
     border: 1px solid #DCD1FA;
     border-radius: 12px;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 15px;
     text-align: left;
 }
 QPushButton#btnCpuScheduling:hover, QPushButton#btnBankers:hover, QPushButton#btnPaging:hover,
@@ -53,11 +53,11 @@ QFrame#contentFrame {
     border-radius: 16px;
 }
 QScrollArea#pageScroll, QWidget#pageHost, QWidget#cardBody { background: transparent; border: none; }
-QLabel#moduleTitleLabel { color: #261A58; font-size: 28px; font-weight: bold; background: transparent; }
-QLabel#moduleSubtitleLabel { color: #6855A9; font-size: 15px; background: transparent; }
-QLabel#sectionLabel { color: #302064; font-size: 15px; font-weight: bold; background: transparent; padding-top: 4px; }
-QLabel#fieldLabel { color: #40318A; font-size: 13px; background: transparent; }
-QLabel#hint { color: #6855A9; font-size: 12px; background: transparent; }
+QLabel#moduleTitleLabel { color: #261A58; font-size: 30px; font-weight: bold; background: transparent; }
+QLabel#moduleSubtitleLabel { color: #6855A9; font-size: 16px; background: transparent; }
+QLabel#sectionLabel { color: #302064; font-size: 17px; font-weight: bold; background: transparent; padding-top: 4px; }
+QLabel#fieldLabel { color: #40318A; font-size: 15px; background: transparent; }
+QLabel#hint { color: #6855A9; font-size: 14px; background: transparent; }
 
 /* ---------- cards ---------- */
 QFrame#card {
@@ -68,15 +68,15 @@ QFrame#card {
 QLabel#cardTitle {
     background-color: #DCD2FA;
     color: #302064;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: bold;
     padding: 9px 14px;
     border-top-left-radius: 11px;
     border-top-right-radius: 11px;
 }
 QFrame#tile { background-color: #F0EBFF; border: 1px solid #E3DAF8; border-radius: 10px; }
-QLabel#tileValue { color: #302064; font-size: 19px; font-weight: bold; background: transparent; }
-QLabel#tileTitle { color: #6855A9; font-size: 12px; background: transparent; }
+QLabel#tileValue { color: #302064; font-size: 21px; font-weight: bold; background: transparent; }
+QLabel#tileTitle { color: #6855A9; font-size: 14px; background: transparent; }
 
 QLabel#badge { border-radius: 10px; padding: 8px 14px; font-weight: bold; }
 QLabel#badge[kind="ok"]   { background-color: #DDF5E6; color: #1F7A45; }
@@ -90,7 +90,7 @@ QPushButton {
     border: 1px solid #DCD1FA;
     border-radius: 12px;
     padding: 8px 12px;
-    font-size: 13px;
+    font-size: 15px;
 }
 QPushButton:hover { background-color: #E8E0FF; }
 QPushButton:pressed { background-color: #DCD2FA; }
@@ -100,7 +100,7 @@ QPushButton#btnRunSimulation {
     border: none;
     border-radius: 14px;
     padding: 13px;
-    font-size: 16px;
+    font-size: 17px;
     font-weight: bold;
 }
 QPushButton#btnRunSimulation:hover { background-color: #6650BD; }
@@ -113,7 +113,7 @@ QPushButton#addRowButton {
     font-weight: bold;
 }
 QPushButton#addRowButton:hover { background-color: #DCD2FA; }
-QPushButton#rowDelete { background: transparent; border: none; color: #9A8BD0; font-size: 15px; padding: 0; border-radius: 8px; }
+QPushButton#rowDelete { background: transparent; border: none; color: #9A8BD0; font-size: 16px; padding: 0; border-radius: 8px; }
 QPushButton#rowDelete:hover { background-color: #FFE0E8; color: #B3365A; }
 
 /* ---------- inputs ---------- */
@@ -174,7 +174,7 @@ QPlainTextEdit#logView {
     border: 1px solid #E3DAF8;
     border-radius: 8px;
     font-family: Consolas, "Courier New", monospace;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 /* ---------- scrollbars ---------- */
@@ -213,7 +213,7 @@ QScrollArea { background: transparent; border: none; }
 QScrollArea > QWidget > QWidget { background: transparent; }
 
 /* ---------- status bar (from main_window.ui) ---------- */
-QStatusBar { background-color: #E7DFFF; color: #30245F; border-top: 1px solid #D1C4F7; font-size: 13px; }
+QStatusBar { background-color: #E7DFFF; color: #30245F; border-top: 1px solid #D1C4F7; font-size: 14px; }
 QStatusBar::item { border: none; }
 QWidget#workspaceWidget { background: transparent; }
 
@@ -230,7 +230,7 @@ QPushButton#btnHome {
     border: 1px solid #DCD1FA;
     border-radius: 12px;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: bold;
 }
 QPushButton#btnHome:hover { background-color: #E8E0FF; }
@@ -239,10 +239,10 @@ QPushButton#btnHome:checked {
     color: #FFFFFF;
     border: 1px solid #5945A0;
 }
-QLabel#modulesTitle { color: #261A58; font-size: 18px; font-weight: bold; background: transparent; padding: 2px 0 6px 0; }
+QLabel#modulesTitle { color: #261A58; font-size: 19px; font-weight: bold; background: transparent; padding: 2px 0 6px 0; }
 QFrame#moduleCard { background-color: #FFFFFF; border: 1px solid #D9CEFA; border-radius: 12px; }
 QFrame#moduleCard:hover { background-color: #F3EEFF; border: 1px solid #7560CC; }
-QLabel#moduleTag { color: #7560CC; font-size: 11px; font-weight: bold; background: transparent; }
+QLabel#moduleTag { color: #7560CC; font-size: 12px; font-weight: bold; background: transparent; }
 
 /* ---------- input fields use Poppins (everything else stays Fredoka) ---------- */
 QLineEdit, QComboBox, QAbstractSpinBox, QAbstractSpinBox QLineEdit,

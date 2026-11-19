@@ -16,14 +16,12 @@ from PySide6.QtWidgets import (QButtonGroup, QFrame, QLabel, QPushButton, QStack
 
 from pages import ALL_PAGES, HomePage
 
-# object names used inside main_window.ui, in the same order as pages.ALL_PAGES
 BUTTON_NAMES = ["btnCpuScheduling", "btnBankers", "btnPaging", "btnPageReplacement",
                 "btnSegmentation", "btnFragmentation", "btnDiskScheduling",
                 "btnMultiprogramming"]
-# CPU-only placeholder panels in the .ui; the real pages replace them
 PLACEHOLDERS = ["pageHeadingWidget", "upperPanel_widget", "resultsWidget"]
 READY = "Ready to simulate..."
-LOGO_PATH = Path(__file__).resolve().parent / "miniOSLogo.png"   # keep the logo next to this file
+LOGO_PATH = Path(__file__).resolve().parent / "miniOSLogo.png"
 LOGO_HEIGHT = 60
 
 
@@ -93,12 +91,13 @@ def load_main_window(ui_path: Path):
     side_layout = QVBoxLayout(side)
     side_layout.setContentsMargins(12, 14, 12, 14)
     side_layout.setSpacing(8)
+    side.setMinimumWidth(230)                # a little wider for the larger text
 
     # Home button lives in its own box ABOVE the sidebar, separate from the module buttons
     home_btn = QPushButton("HOME")
     home_btn.setObjectName("btnHome")
     home_btn.setCheckable(True)
-    home_btn.setMinimumHeight(44)
+    home_btn.setMinimumHeight(46)
     home_btn.setCursor(Qt.CursorShape.PointingHandCursor)
     group.addButton(home_btn)
     home_box = QFrame()
@@ -124,7 +123,7 @@ def load_main_window(ui_path: Path):
 
     for i, btn in enumerate(buttons):
         btn.setCheckable(True)
-        btn.setMinimumHeight(44)
+        btn.setMinimumHeight(46)
         btn.setCursor(Qt.CursorShape.PointingHandCursor)
         group.addButton(btn)
         side_layout.addWidget(btn)

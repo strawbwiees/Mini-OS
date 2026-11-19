@@ -793,8 +793,10 @@ class MultiprogPage(ModulePage):
         body.addWidget(self.table)
 
     def build_options(self, body):
-        self.memory = spin(1, 10_000_000, 1024)
-        self.quantum = spin(1, 1000, 2)
+        self.memory = line("1024", "e.g. 1024 or 512.5")
+        self.memory.setValidator(QDoubleValidator(0.001, 10_000_000.0, 3))   # decimals allowed
+        self.quantum = line("2", "e.g. 2 or 0.5")
+        self.quantum.setValidator(QDoubleValidator(0.001, 1000.0, 3))        # decimals allowed
         self.degree = spin(0, 1000, 0)
         form(body, [("Total memory", self.memory), ("CPU time quantum", self.quantum),
                     ("Max degree of multiprogramming (0 = unlimited)", self.degree)])
@@ -802,16 +804,19 @@ class MultiprogPage(ModulePage):
         body.addWidget(self.action("Load Sample", lambda: self.table.set_rows(multiprogramming.SAMPLE)))
 
     def run(self):
-        P = multiprogramming.parse_int
+        P = multiprogramming.parse_number            # accepts decimals such as 1.5 or 0,5
+        total_memory = P(self.memory.text(), "Total memory", positive=True)
+        quantum = P(self.quantum.text(), "Time quantum", positive=True)
         progs = []
         for n, r in enumerate(self.table.rows(), 1):
             name = r[0].strip()
             if not name:
                 raise multiprogramming.InputError(f"Row {n}: the program name is blank.")
             progs.append(multiprogramming.Program(name, P(r[1], f"{name} arrival", 0),
-                                                   P(r[2], f"{name} memory", 1), P(r[3], f"{name} CPU burst", 1),
+                                                   P(r[2], f"{name} memory", positive=True),
+                                                   P(r[3], f"{name} CPU burst", positive=True),
                                                    P(r[4], f"{name} I/O burst", 0)))
-        res = multiprogramming.simulate(progs, self.memory.value(), self.quantum.value(), self.degree.value())
+        res = multiprogramming.simulate(progs, total_memory, quantum, self.degree.value())
         m = res.metrics
         colors = ColorMap({"IDLE": "#E6E1F5"})
         self.clear_results()
@@ -825,7 +830,7 @@ class MultiprogPage(ModulePage):
                         ("Makespan", m["makespan"])]))
         for p in res.rejected:
             self.add(badge(f"{p.name} was rejected: it needs {p.memory} memory but the system "
-                           f"only has {self.memory.value()}.", "bad"))
+                           f"only has {total_memory}.", "bad"))
         lo = min([s for _, s, _ in res.cpu_segments + res.io_segments] or [0])
         hi = max([e for _, _, e in res.cpu_segments + res.io_segments] or [1])
         for title, segs in (("CPU timeline", res.cpu_segments), ("I/O timeline", res.io_segments)):

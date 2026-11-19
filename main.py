@@ -24,7 +24,7 @@ def main():
         QFontDatabase.addApplicationFont(str(f))
     font = QFont()
     font.setFamilies(["Fredoka", "Poppins", "Segoe UI", "Helvetica Neue", "Arial"])
-    font.setPointSize(10)
+    font.setPointSize(11)
     app.setFont(font)
 
     style_path = Path(__file__).resolve().parent / "styles.qss"
